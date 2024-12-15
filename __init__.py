@@ -19,8 +19,8 @@ def mark_complete():
     selected_indices = list_box.curselection()
     for index in reversed(selected_indices):
         task = tasks[index]
-        if not task.startswith('✅'):
-            tasks[index] = f"✅ {task}"
+        if not task.startswith('✅'):  # Проверяем, есть ли уже галочка
+            tasks[index] = f"✅ {task}"  # Добавляем галочку только если её нет
     update_list_box()
 
 def unmark_complete():
@@ -110,17 +110,17 @@ list_box.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 button_frame = tk.Frame(root)
 button_frame.pack(side=tk.LEFT, anchor='w', padx=10, pady=10)
 
-complete_button = tk.Button(button_frame, text="Выполнено", command=mark_complete)
+complete_button = tk.Button(button_frame, text="Выполнено", command=mark_complete, bg="green", fg="white")
 complete_button.grid(row=0, column=0, sticky='ew')
 
-uncomplete_button = tk.Button(button_frame, text="Не выполнено", command=unmark_complete)
-uncomplete_button.grid(row=1, column=0, sticky='ew')
+uncomplete_button = tk.Button(button_frame, text="Не выполнено", command=unmark_complete, bg="red", fg="white")
+uncomplete_button.grid(row=0, column=1, sticky='ew')
 
 edit_button = tk.Button(button_frame, text="Редактировать", command=edit_task)
 edit_button.grid(row=2, column=0, sticky='ew')
 
 delete_button = tk.Button(button_frame, text="Удалить", command=delete_task)
-delete_button.grid(row=3, column=0, sticky='ew')
+delete_button.grid(row=2, column=1, sticky='ew')
 
 # Меню для сохранения/загрузки списка задач
 menu_bar = tk.Menu(root)

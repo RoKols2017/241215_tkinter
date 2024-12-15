@@ -12,23 +12,24 @@ def add_task():
 def update_list_box():
     list_box.delete(0, tk.END)
     for i, task in enumerate(tasks):
-        status = '✅' if task.startswith('✅') else ''
-        list_box.insert(i, f"{status}{task}")
+        list_box.insert(i, task)
+        if task in completed_tasks:
+            list_box.itemconfig(i, foreground="green")
 
 def mark_complete():
     selected_indices = list_box.curselection()
-    for index in reversed(selected_indices):
+    for index in selected_indices:
         task = tasks[index]
-        if not task.startswith('✅'):  # Проверяем, есть ли уже галочка
-            tasks[index] = f"✅ {task}"  # Добавляем галочку только если её нет
+        if task not in completed_tasks:
+            completed_tasks.add(task)
     update_list_box()
 
 def unmark_complete():
     selected_indices = list_box.curselection()
-    for index in reversed(selected_indices):
+    for index in selected_indices:
         task = tasks[index]
-        if task.startswith('✅'):
-            tasks[index] = task.replace('✅ ', '')
+        if task in completed_tasks:
+            completed_tasks.remove(task)
     update_list_box()
 
 def edit_task():
@@ -65,6 +66,9 @@ def delete_task():
     selected_indices = list(list_box.curselection())
     selected_indices.sort(reverse=True)
     for index in selected_indices:
+        task = tasks[index]
+        if task in completed_tasks:
+            completed_tasks.remove(task)
         del tasks[index]
     update_list_box()
 
@@ -73,7 +77,10 @@ def save_tasks():
     if filename:
         with open(filename, "w") as file:
             for task in tasks:
-                file.write(f"{task}\n")
+                if task in completed_tasks:
+                    file.write(f"V {task}\n")
+                else:
+                    file.write(f"{task}\n")
         messagebox.showinfo("Успех!", "Задачи сохранены!")
 
 def load_tasks():
@@ -81,8 +88,14 @@ def load_tasks():
     if filename:
         try:
             with open(filename, "r") as file:
-                global tasks
-                tasks = [line.strip() for line in file.readlines()]
+                global tasks, completed_tasks
+                tasks = []
+                completed_tasks = set()
+                for line in file:
+                    task = line.strip()
+                    if task.startswith('V'):
+                        completed_tasks.add(task[2:])
+                    tasks.append(task[2:] if task.startswith('V') else task)
             update_list_box()
             messagebox.showinfo("Успех!", "Задачи загружены!")
         except Exception as e:
@@ -93,6 +106,7 @@ root.title("ToDo List App")
 root.geometry("400x500")
 
 tasks = []
+completed_tasks = set()  # Множество для хранения завершенных задач
 
 # Поле ввода новой задачи
 task_entry = tk.Entry(root)
@@ -117,10 +131,10 @@ uncomplete_button = tk.Button(button_frame, text="Не выполнено", comm
 uncomplete_button.grid(row=0, column=1, sticky='ew')
 
 edit_button = tk.Button(button_frame, text="Редактировать", command=edit_task)
-edit_button.grid(row=2, column=0, sticky='ew')
+edit_button.grid(row=1, column=0, sticky='ew')
 
 delete_button = tk.Button(button_frame, text="Удалить", command=delete_task)
-delete_button.grid(row=2, column=1, sticky='ew')
+delete_button.grid(row=1, column=1, sticky='ew')
 
 # Меню для сохранения/загрузки списка задач
 menu_bar = tk.Menu(root)
